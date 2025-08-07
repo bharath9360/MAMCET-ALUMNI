@@ -7,37 +7,54 @@ const Alumni = require('../models/Alumni');
 router.post('/signup', async (req, res) => {
     try {
         const {
-            fullName, email, username, phoneNumber, degreeBranch,
+            fullName, email, phoneNumber, degreeBranch,
             graduationYear, rollNumber, dateOfBirth, gender,
-            currentJob, password
+            currentLocation, address, currentJob, password,
+            additionalDegree, additionalBranch
         } = req.body;
 
-        // Basic validation
-        if (!fullName || !email || !password) {
-            return res.status(400).json({ msg: 'Please enter all required fields.' });
+        // Basic validation for required fields
+        if (!fullName || !email || !password || !phoneNumber || !rollNumber) {
+            return res.status(400).json({ msg: 'Please fill in all required fields.' });
         }
 
-        // Check if user already exists
-        let user = await Alumni.findOne({ email });
-        if (user) {
-            return res.status(400).json({ msg: 'An account with this email already exists.' });
-        }
-
-        // Create a new user instance
-        user = new Alumni({
-            fullName, email, username, phoneNumber, degreeBranch,
-            graduationYear, rollNumber, dateOfBirth, gender,
-            currentJob, password
+        // Check for uniqueness of email, phone number, and roll number
+        const existingUser = await Alumni.findOne({ 
+            $or: [
+                { email: email }, 
+                { phoneNumber: phoneNumber },
+                { rollNumber: rollNumber }
+            ] 
         });
 
-        // Save the new user to the database (password will be hashed automatically)
+        if (existingUser) {
+            if (existingUser.email === email) {
+                return res.status(400).json({ msg: 'An account with this email already exists.' });
+            }
+            if (existingUser.phoneNumber === phoneNumber) {
+                return res.status(400).json({ msg: 'An account with this phone number already exists.' });
+            }
+            if (existingUser.rollNumber === rollNumber) {
+                return res.status(400).json({ msg: 'An account with this roll number already exists.' });
+            }
+        }
+
+        // Create a new user instance with the modified fields
+        const user = new Alumni({
+            fullName, email, phoneNumber, degreeBranch,
+            graduationYear, rollNumber, dateOfBirth, gender,
+            currentLocation, address, currentJob, password,
+            additionalDegree, additionalBranch
+        });
+
+        // Save the new user to the database
         await user.save();
 
-        res.status(201).json({ msg: 'Sign up successful! Welcome to the network.' });
+        res.status(201).json({ msg: 'Registration Successful! Welcome to the Alumni Network.' });
 
     } catch (err) {
         console.error(err.message);
-        res.status(500).send('Server Error');
+        res.status(500).json({ msg: 'Server Error' });
     }
 });
 
