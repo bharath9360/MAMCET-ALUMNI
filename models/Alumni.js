@@ -4,14 +4,17 @@ const bcrypt = require('bcryptjs');
 const AlumniSchema = new mongoose.Schema({
     fullName: { type: String, required: true },
     email: { type: String, required: true, unique: true },
-    username: { type: String, required: true, unique: true },
-    phoneNumber: { type: String, required: true },
+    phoneNumber: { type: String, required: true, unique: true },
     degreeBranch: { type: String, required: true },
     graduationYear: { type: String, required: true },
     rollNumber: { type: String, required: true, unique: true },
     dateOfBirth: { type: Date, required: true },
     gender: { type: String, required: true },
+    currentLocation: { type: String },
+    address: { type: String },
     currentJob: { type: String },
+    additionalDegree: { type: String },
+    additionalBranch: { type: String },
     password: { type: String, required: true },
     createdAt: { type: Date, default: Date.now }
 });
