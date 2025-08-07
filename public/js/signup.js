@@ -1,12 +1,31 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // --- Elements for Toggling Fields ---
+    const qualYesRadio = document.getElementById('qualYes');
+    const qualNoRadio = document.getElementById('qualNo');
+    const additionalFields = document.getElementById('additional-qual-fields');
     const form = document.getElementById('signup-form');
 
+    // --- Logic for Toggling Additional Qualification Fields ---
+    function toggleAdditionalFields() {
+        if (qualYesRadio.checked) {
+            additionalFields.classList.remove('d-none');
+        } else {
+            additionalFields.classList.add('d-none');
+        }
+    }
+
+    if(qualYesRadio && qualNoRadio) {
+        qualYesRadio.addEventListener('change', toggleAdditionalFields);
+        qualNoRadio.addEventListener('change', toggleAdditionalFields);
+        toggleAdditionalFields(); // Initial check
+    }
+
+    // --- Logic for Form Submission ---
     if (form) {
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
 
-            // Clear previous messages
-            const existingAlert = document.querySelector('.alert');
+            const existingAlert = form.querySelector('.alert');
             if (existingAlert) {
                 existingAlert.remove();
             }
@@ -19,20 +38,27 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // Collect form data
+            // Collect form data from the modified form
             const formData = {
                 fullName: form.fullName.value,
                 email: form.email.value,
-                username: form.username.value,
                 phoneNumber: form.phoneNumber.value,
                 degreeBranch: form.degreeBranch.value,
                 graduationYear: form.graduationYear.value,
                 rollNumber: form.rollNumber.value,
                 dateOfBirth: form.dateOfBirth.value,
                 gender: form.gender.value,
+                currentLocation: form.currentLocation.value,
+                address: form.address.value,
                 currentJob: form.currentJob.value,
                 password: password,
             };
+            
+            // Include additional qualification if 'Yes' is selected
+            if (qualYesRadio.checked) {
+                formData.additionalDegree = form.additionalDegree.value;
+                formData.additionalBranch = form.additionalBranch.value;
+            }
 
             try {
                 // Send data to the back-end API
@@ -50,6 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 showAlert(result.msg, 'success');
                 form.reset();
+                toggleAdditionalFields(); // Reset the radio button view
 
             } catch (error) {
                 showAlert(error.message, 'danger');
