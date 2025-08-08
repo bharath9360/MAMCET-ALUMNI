@@ -7,7 +7,11 @@ const AlumniSchema = new mongoose.Schema({
     phoneNumber: { type: String, required: true, unique: true },
     degreeBranch: { type: String, required: true },
     graduationYear: { type: String, required: true },
-    rollNumber: { type: String, required: true, unique: true },
+    rollNumber: { 
+        type: String, 
+        unique: true,
+        sparse: true // This allows multiple documents to have a null/missing value
+    },
     dateOfBirth: { type: Date, required: true },
     gender: { type: String, required: true },
     currentLocation: { type: String },
