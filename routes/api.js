@@ -14,18 +14,12 @@ router.post('/signup', async (req, res) => {
         } = req.body;
 
         // Basic validation for required fields
-        if (!fullName || !email || !password || !phoneNumber || !rollNumber) {
+        if (!fullName || !email || !password || !phoneNumber) {
             return res.status(400).json({ msg: 'Please fill in all required fields.' });
         }
 
-        // Check for uniqueness of email, phone number, and roll number
-        const existingUser = await Alumni.findOne({ 
-            $or: [
-                { email: email }, 
-                { phoneNumber: phoneNumber },
-                { rollNumber: rollNumber }
-            ] 
-        });
+        // Check for uniqueness of email and phone number
+        let existingUser = await Alumni.findOne({ $or: [{ email: email }, { phoneNumber: phoneNumber }] });
 
         if (existingUser) {
             if (existingUser.email === email) {
@@ -34,15 +28,22 @@ router.post('/signup', async (req, res) => {
             if (existingUser.phoneNumber === phoneNumber) {
                 return res.status(400).json({ msg: 'An account with this phone number already exists.' });
             }
-            if (existingUser.rollNumber === rollNumber) {
+        }
+        
+        // If a roll number is provided (and is not an empty string), check for its uniqueness
+        if (rollNumber && rollNumber.trim() !== '') {
+            existingUser = await Alumni.findOne({ rollNumber: rollNumber });
+            if (existingUser) {
                 return res.status(400).json({ msg: 'An account with this roll number already exists.' });
             }
         }
 
-        // Create a new user instance with the modified fields
+        // Create a new user instance. If rollNumber is empty, it won't be saved.
         const user = new Alumni({
             fullName, email, phoneNumber, degreeBranch,
-            graduationYear, rollNumber, dateOfBirth, gender,
+            graduationYear, 
+            rollNumber: rollNumber || undefined, // Treat empty string as undefined
+            dateOfBirth, gender,
             currentLocation, address, currentJob, password,
             additionalDegree, additionalBranch
         });
